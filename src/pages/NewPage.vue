@@ -11,14 +11,14 @@
                     @click:row="showListener"
                     style="cursor:pointer"
                     >
-                <template v-slot:top>
-                <v-text-field
-                v-model="search"
-                label="Поиск"
-                ></v-text-field>
-            </template>
-                
+                    <template v-slot:top>
+                        <v-text-field
+                        v-model="search"
+                        label="Поиск"
+                        ></v-text-field>
+                    </template>    
                 </v-data-table>
+            
 
             </div>
             <div class="right-block">
@@ -26,7 +26,9 @@
                     <h1> {{ rightHeader }} </h1>
                     <img @click="hideListener()" v-if="!newIsShow" src="/XXX.png" class="close-img"/> 
                 </div>
-                <form v-if="newIsShow"> 
+                <div  v-if="newIsShow">
+                    <!-- добавление слушателя-->
+                <form> 
                     <div class="container-right"> 
                         <div class="group">      
                             <input type="text" required style="width:200px" v-model="newLastName">
@@ -65,6 +67,78 @@
                         Добавить слушателя
                     </div>
                 </form>
+                <!-- Проверка всех документов в ожидании --> 
+                     <div v-if="docsStatus0" v-key="id">
+                       <v-card>
+                            <v-card-title class="cardTitle" style="margin-top: 40px">{{ docsStatus0Header }}</v-card-title>
+                            <div>
+                                <v-card-text class="cardText">
+                                    <v-simple-table>
+                                        <template v-slot:default>                        
+                                            <tbody id="simpleTable">
+                                                <tr
+                                                    v-for="doc in docsStatus0.rows"
+                                                    :key="doc.id"
+                                                >
+                                                    <td>{{ doc.last_name + " " + doc.first_name + " " + doc.patronymic }}</td>
+                                                    
+                                                    <td class="tableClicked">
+                                                        <v-tooltip bottom>
+                                                            <template v-slot:activator="{ on, attrs }">
+                                                                <v-icon
+                                                                class="downloadedDoc"
+                                                                size=40
+                                                                v-bind="attrs"
+                                                                v-on="on"
+                                                                >
+                                                                mdi-file-pdf-outline
+                                                                </v-icon>
+                                                            </template>
+                                                        <span> {{ doc.name }} </span>
+                                                        </v-tooltip>
+                                                    </td>
+                                                    <td class="tableClicked">
+                                                        <v-tooltip bottom>
+                                                            <template v-slot:activator="{ on, attrs }">
+                                                                <v-icon
+                                                                class="downloadedDoc"
+                                                                size=40
+                                                                v-bind="attrs"
+                                                                v-on="on"
+                                                                @click="acceptDoc(doc)"
+                                                                >
+                                                                mdi-file-plus
+                                                                </v-icon>
+                                                            </template>
+                                                        <span>Принять</span>
+                                                        </v-tooltip>
+                                                    </td>
+                                                    <td class="tableClicked">
+                                                        <v-tooltip bottom>
+                                                            <template v-slot:activator="{ on, attrs }">
+                                                                <v-icon
+                                                                class="downloadedDoc"
+                                                                size=40
+                                                                v-bind="attrs"
+                                                                v-on="on"
+                                                                @click="cancelDoc(doc)"
+                                                                >
+                                                                mdi-file-remove
+                                                                </v-icon>
+                                                            </template>
+                                                        <span>Отклонить</span>
+                                                        </v-tooltip>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </template>
+                                    </v-simple-table>
+                                </v-card-text>
+                            </div>
+                       </v-card>
+                    </div>    
+                </div>
+                <!-- Изменение данных слушателя -->
                 <div v-if="!newIsShow" v-key="currentId">
                     
                     <form class="listeners-form"> 
@@ -120,56 +194,7 @@
                             Изменить данные
                         </div>
                     </form>
-                <!--    <h1 style="padding-top: 20px; padding-bottom: 20px"> Курсы слушателя </h1>
-                    <div class="container-right" style="margin-top:0px"> 
-                        <select v-model="newCourseId" style="width:500px" >
-                            <option v-for="list in showCurrentCourses" :key="list.id" v-bind:value="list.id"> {{ list.name }} </option>
-                        </select>
-                        <div class="tile-glow" @click="addCourse" style="font-size:15px;">   
-                            Добавить курс
-                        </div>
-                    </div>
-                    <table class="courses-table" >  
-                        <tr class="table-hat">
-                            <td>
-                                Название курса
-                            </td>
-                            <td>
-                                Дата начала
-                            </td>
-                            <td>
-                                Договор
-                            </td>
-                            <td>
-                                Счёт
-                            </td>
-                        </tr>                     
-                        <tr v-for="list in showCourses" :key="list.idListener">
-                            <td> {{ this.courses[list.idCourse].name }} </td>
-                            <td> {{ this.courses[list.idCourse].startDate }} </td>
-                            <td v-if="list.agreement==0" class="add-agreement"> 
-                                <img src="/XXX.png" class="add-img" @click="addAgreement(list)" />
-                            </td>
-                            <td id="pdf-img-wait" v-if="list.agreement==1">
-                                <img src="/pdf.png" class="pdf-img-wait" /> 
-                            </td>
-                            <td id="pdf-img-done" v-if="list.agreement==2">
-                                <img src="/pdf.png" class="pdf-img-done" />  
-                            </td>
-                            <td id="pdf-img-cancelled" v-if="list.agreement==-1">
-                                <img  src="/pdf.png"  class="pdf-img-cancelled"/>
-                            </td>
-
-                            <td v-if="list.invoice==1" class="add-agreement"> 
-                                <img src="/XXX.png" class="add-img" @click="addInvoice(list)" />
-                            </td>
-                            <td id="pdf-img-done" v-if="list.invoice==2">
-                                <img src="/pdf.png" class="pdf-img-done" /> 
-                            </td>                      
-                        </tr>
-                    </table>
-                    -->
-                    <!-- Документы слушателя -->
+                
                     <v-card>
                     <v-card-title class="cardTitle">Документы</v-card-title>
                     <!-- Документы в ожидании проверки -->
@@ -187,12 +212,52 @@
                                             :key="doc.id"
                                         >
                                             <td>{{ doc.name }}</td>
-                                            <td class="tableClicked"><img src="/pdf.png" style="width:30px;"/> </td>
-                                            <td width="5" @click="acceptDoc(doc)" class="tableClicked">
-                                                Принять
+                                            <td class="tableClicked">
+                                                <v-tooltip bottom>
+                                                    <template v-slot:activator="{ on, attrs }">
+                                                        <v-icon
+                                                        class="downloadedDoc"
+                                                        size=40
+                                                        v-bind="attrs"
+                                                        v-on="on"
+                                                        >
+                                                        mdi-file-pdf-outline
+                                                        </v-icon>
+                                                    </template>
+                                                <span>Просмотр файла</span>
+                                                </v-tooltip>
                                             </td>
-                                            <td width="5" @click="cancelDoc(doc)" class="tableClicked">
-                                                Отклонить
+                                            <td class="tableClicked">
+                                                <v-tooltip bottom>
+                                                    <template v-slot:activator="{ on, attrs }">
+                                                        <v-icon
+                                                        class="downloadedDoc"
+                                                        size=40
+                                                        v-bind="attrs"
+                                                        v-on="on"
+                                                        @click="acceptDoc(doc)"
+                                                        >
+                                                        mdi-file-plus
+                                                        </v-icon>
+                                                    </template>
+                                                <span>Принять</span>
+                                                </v-tooltip>
+                                            </td>
+                                            <td class="tableClicked">
+                                                <v-tooltip bottom>
+                                                    <template v-slot:activator="{ on, attrs }">
+                                                        <v-icon
+                                                        class="downloadedDoc"
+                                                        size=40
+                                                        v-bind="attrs"
+                                                        v-on="on"
+                                                        @click="cancelDoc(doc)"
+                                                        >
+                                                        mdi-file-remove
+                                                        </v-icon>
+                                                    </template>
+                                                <span>Отклонить</span>
+                                                </v-tooltip>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -371,7 +436,7 @@
                                <!-- Договор -->
                                 <template v-slot:[`item.agreements_link`]>
                                     <v-row justify="center" >
-                                        <v-img src="pdf.png" max-width="30" class="tableClicked"></v-img>
+                                        <v-icon size=40 class="downloadedDoc" id="tableClicked"> mdi-file-pdf-outline </v-icon>
                                     </v-row>
                                 </template>
 
@@ -411,7 +476,7 @@
                                     </v-row>
 
                                     <v-row  v-if="item.status==1" justify="center" >
-                                        <v-img src="pdf.png" max-width="30" class="tableClicked"></v-img>
+                                        <v-icon size=40 class="downloadedDoc" id="tableClicked"> mdi-file-pdf-outline </v-icon>
                                     </v-row>
                                     <v-row  v-if="item.status==-1" justify="center" >
                                         <v-icon size="35">mdi-repeat-off</v-icon>
@@ -422,55 +487,8 @@
                             </v-data-table>
                         </v-card-text>
                         
-                    </div>
-                
-                    
-            
+                    </div>            
                     </v-card>
-                   <!-- <h2 style="margin-bottom:30px" v-if:="this.currentId==0 && showWaitDocs.length"> Документы в ожидании </h2>
-                    <table class="courses-table" v-if:="this.currentId==0 && showWaitDocs.length" style="box-shadow: 0 0 5px rgb(255, 204, 0);">
-                        <tr v-for:="list in showWaitDocs" >
-                            <td> {{ UserStore.docTypes[list.idDocType].name }}</td>
-                            <td style="width: 60px"> <img src="/pdf.png" class="pdf-img" /> </td>
-                            <td style="cursor:pointer;width: 60px" @click="AcceptDoc(list.id)">
-                                Принять
-                            </td>
-                            <td style="cursor:pointer;width: 60px" @click="DenyDoc(list.id)">
-                                Отклонить
-                            </td>
-                        </tr>
-                    </table>
-                    <h2> Загрузить новый документ </h2>
-                    <div class="container-right" style="margin-top:0px; "> 
-                        <select v-model="newDocId" style="width: 350px">
-                            <option v-for="list in UserStore.docTypes" :key="list.id" v-bind:value="list.id"> {{ list.name }} </option>
-                        </select>
-                        <div class="tile-glow" style="width:50px; padding:0px;">     
-                            <img @click="changeAddStatus" v-if:="this.addDocStatus!=1" src="/XXX.png" style="width:30px; transform: rotate(45deg); padding:3px; margin: 0 auto;"/>
-                            <img v-if:="this.addDocStatus!=0" src="/pdf.png" style="width:30px; padding:3px; margin: 0 auto;"/> 
-                        </div> 
-                        <div class="tile-glow" @click="addDoc" style="text-align: center; font-size:14px">   
-                            Добавить документ
-                        </div>
-                    </div>
-                    
-                    <h2 style="margin-bottom:30px"> Загруженные документы </h2>
-                    <table class="courses-table" v-if:="this.currentId==0">
-                        <tr class="table-hat">
-                            <td>
-                                Наименование документа
-                            </td>
-                            <td>
-                                Статус
-                            </td>   
-                        </tr>
-                        <tr v-for:="list in UserStore.listeners_docs">
-                            <td> {{ UserStore.docTypes[list.idDocType].name }}</td>
-                            <td v-if:="list.status==0"> В ожидании </td>
-                            <td v-if:="list.status==1"> Загружен </td>
-                            <td v-if:="list.status==-1"> Отклонён </td>
-                        </tr>
-                    </table> -->
                     </div>
                 </div>
             </div>    
@@ -486,11 +504,10 @@ export default {
             users: null,
             docs: null,
             errors: null,
-            accept: 'Принять',
-            cancel: 'Отклонить',
             courseTypes: null,
             agreements: null,
             courses: null,
+            docsStatus0: null,
             headers: [
                 { text: 'Имя', value: 'first_name', align: 'center' },
                 { text: 'Фамилия', value: 'last_name', align: 'center' },
@@ -521,6 +538,7 @@ export default {
             newDocId: -1,
             UserStore,
             rightHeader: 'Добавление слушателя',
+            docsStatus0Header: 'Документы в ожидании проверки',
             fio: '',
             newFirstName: '',
             newLastName: '',
@@ -548,6 +566,17 @@ export default {
             this.axios.get(fullURL)
             .then((responce) => {
               this.users = responce.data;
+            })
+            .catch((error) => {
+              this.errors = error.data.detail
+            })
+        },
+        getDocsStatus0: function () {
+            let fullURL = '/docs/getAllDocsStatus0'
+
+            this.axios.get(fullURL)
+            .then((responce) => {
+              this.docsStatus0 = responce.data;
             })
             .catch((error) => {
               this.errors = error.data.detail
@@ -619,6 +648,7 @@ export default {
             .then((responce) => {
               this.results = responce.data;
               this.getDocs();
+              this.getDocsStatus0();
             })
             .catch((error) => {
               this.errors = error.data.detail
@@ -637,6 +667,7 @@ export default {
             .then((responce) => {
               this.results = responce.data;
               this.getDocs();
+              this.getDocsStatus0();
             })
             .catch((error) => {
               this.errors = error.data.detail
@@ -654,6 +685,7 @@ export default {
             .then((responce) => {
               this.results = responce.data;
               this.getDocs();
+              this.getDocsStatus0();
             })
             .catch((error) => {
               this.errors = error.data.detail
@@ -808,21 +840,6 @@ export default {
         
     },
     computed: {
-        showListeners: function () {
-            return this.listeners.filter(listener => {
-                return (listener.first_name + " " + listener.last_name).includes(this.fio);
-            })
-        },
-        showCourses () {
-            return this.listeners_courses.filter(listener_course => {
-                return listener_course.idListener == this.currentId
-            }).reverse();
-        },  
-        showCurrentCourses () {
-            return this.courses.filter(course => {
-                return course.status != -1
-            });
-        },   
         showDocsStatus0: function () {
             return this.docs.rows.filter(doc => {
                 return (doc.status == 0);
@@ -832,6 +849,7 @@ export default {
     mounted () {
       this.getUsers()
       this.getCoursesTypes()
+      this.getDocsStatus0()
     }
 }
 </script>
@@ -839,6 +857,13 @@ export default {
 <style scoped>
 h1{
     font-size: 30px;
+}
+.downloadedDoc {
+   color: #2f1a54;
+}
+.docsStatus0{
+    padding-top: 40px;
+    padding-bottom: 15px;
 }
 .cardTitle {
     background: linear-gradient(12deg, rgba(0,0,4,1) 0%, rgb(54 22 109) 79%, rgb(75 42 134) 79%);
@@ -861,15 +886,13 @@ h1{
     text-align: center;
 }
 #addDoc {
-    color: #4b2a86;
+    color: #2f1a54;
     padding-right: 25px;
 }
 #addInvoice {
-    color: #4b2a86;
+    color: #2f1a54;
 }
-.downloadedDoc {
-    color: #4b2a86;
-}
+
 .waitingDoc {
     color:#bdbbd0;
 }

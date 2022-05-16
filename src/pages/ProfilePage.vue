@@ -191,7 +191,7 @@
                                             >
                                                 <td>{{ doc.name }}</td>
                                                 <td width="5">
-                                                    <v-icon id="deleteDoc" class="downloadedDoc" @click="deleteDoc(doc)">mdi-delete</v-icon>
+                                                    <v-icon id="deleteDoc" class="downloadedDoc" size=25 @click="deleteDoc(doc)">mdi-delete</v-icon>
                                                 </td>
                                             </tr>
                                         </tbody>
@@ -487,7 +487,7 @@ export default {
     }
 
     #addDoc {
-        color: #4b2a86;
+        color: #2f1a54;
         padding-right: 20px;
     }
 
